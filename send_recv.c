@@ -54,15 +54,15 @@ static void init_port(struct rte_mempool *mbuf_pool) {
         rte_exit(EXIT_FAILURE, "Error RX queue setup\n");
     }
 
-	//为网卡分配发送队列
-	struct rte_eth_txconf txq_conf = dev_info.default_txconf;
-	txq_conf.offloads = eth_port_conf.rxmode.offloads;
-	if (rte_eth_tx_queue_setup(gPortId, 0 , 1024, 
-		rte_eth_dev_socket_id(gPortId), &txq_conf) < 0) {
+    //为网卡分配发送队列
+    struct rte_eth_txconf txq_conf = dev_info.default_txconf;
+    txq_conf.offloads = eth_port_conf.rxmode.offloads;
+    if (rte_eth_tx_queue_setup(gPortId, 0 , 1024, 
+        rte_eth_dev_socket_id(gPortId), &txq_conf) < 0) {
 		
-		rte_exit(EXIT_FAILURE, "Could not setup TX queue\n");
+        rte_exit(EXIT_FAILURE, "Could not setup TX queue\n");
 		
-	}
+    }
 	
     //启动网卡
     if(rte_eth_dev_start(gPortId) != 0) {
@@ -91,7 +91,7 @@ static int encode_udp_pkt(uint8_t *pkt_data, unsigned int total_len, uint8_t *ud
     iphdr->src_addr = tx_src_ipaddr;
     iphdr->dst_addr = tx_dst_ipaddr;
 	
-	iphdr->hdr_checksum = 0;
+    iphdr->hdr_checksum = 0;
     iphdr->hdr_checksum = rte_ipv4_cksum(iphdr);
 
 
@@ -101,10 +101,10 @@ static int encode_udp_pkt(uint8_t *pkt_data, unsigned int total_len, uint8_t *ud
     
     udphdr->dst_port = tx_dst_udp_port;
     udphdr->src_port = tx_src_udp_port;
-	rte_memcpy((uint8_t*)(udphdr) + sizeof(struct rte_udp_hdr), udp_data, len);
+    rte_memcpy((uint8_t*)(udphdr) + sizeof(struct rte_udp_hdr), udp_data, len);
 	
-	udphdr->dgram_cksum = 0;
-	udphdr->dgram_cksum = rte_ipv4_udptcp_cksum(iphdr, udphdr);
+    udphdr->dgram_cksum = 0;
+    udphdr->dgram_cksum = rte_ipv4_udptcp_cksum(iphdr, udphdr);
 
     printf("Sending: udp src port: %d -> %d\n", ntohs(tx_src_udp_port), ntohs(tx_dst_udp_port));
 
@@ -184,28 +184,24 @@ int main(int argc, char * argv[])
 					(char *)(udphdr+1));	
 
 
-                rte_memcpy(&tx_dst_mac, &ehdr->s_addr, sizeof(struct rte_ether_addr));
-                tx_src_ipaddr = iphdr->dst_addr;
-                tx_dst_ipaddr = iphdr->src_addr;
-                tx_src_udp_port = udphdr->dst_port;
-                tx_dst_udp_port = udphdr->src_port;
+				rte_memcpy(&tx_dst_mac, &ehdr->s_addr, sizeof(struct rte_ether_addr));
+				tx_src_ipaddr = iphdr->dst_addr;
+				tx_dst_ipaddr = iphdr->src_addr;
+				tx_src_udp_port = udphdr->dst_port;
+				tx_dst_udp_port = udphdr->src_port;
 
-			    struct rte_mbuf *tx_mbuf = create_tx_mbuf(mbuf_pool, (uint8_t *)(udphdr+1), length);
-
-    			if(rte_eth_tx_burst(gPortId, 0, &tx_mbuf, 1) <= 0) {
-                    printf("Error Sending to eth\n");
-    			}
+				struct rte_mbuf *tx_mbuf = create_tx_mbuf(mbuf_pool, (uint8_t *)(udphdr+1), length);
+				if(rte_eth_tx_burst(gPortId, 0, &tx_mbuf, 1) <= 0) {
+					printf("Error Sending to eth\n");
+				}
     			
-    			rte_pktmbuf_free(tx_mbuf);
+				rte_pktmbuf_free(tx_mbuf);
 			}
 
 			rte_pktmbuf_free(mbufs[i]);
 		}
 
     }
-    
-
-
 
     return 0;
 }
